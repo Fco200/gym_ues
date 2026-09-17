@@ -118,6 +118,36 @@ npm run dist:desktop
 
 El instalador queda en `desktop/dist/`. Instálalo en la computadora de la entrada del gimnasio.
 
+### Instalar el checador en la computadora (paso a paso)
+
+1. Copia `desktop/dist/Gym UES Checador Setup 1.0.0.exe` a la computadora destino (o cópiala directo desde esta PC por USB/red).
+2. Haz doble clic en el instalador: se instala solo y crea el acceso `Gym UES Checador` en el escritorio.
+3. Para **probar sin instalar**: usa directamente `desktop\dist\win-unpacked\Gym UES Checador.exe` (versión portable, no requiere instalación).
+4. Asegúrate de que en esa misma red el servidor esté corriendo en `http://localhost:4000` (o entra con ventana de prueba: `Gym UES Checador.exe --windowed`).
+5. El checador abre en **pantalla completa**. Para salir: `Ctrl + Alt + Q` (o `Ctrl + Shift + X`).
+6. Para que arranque solo al encender la PC, ya instalado ejecuta una vez:
+
+   ```bash
+   npm run autostart:on
+   # para volver a modo manual:
+   npm run autostart:off
+   ```
+
+7. Si al abrir el checador ves la pantalla de espera con reloj, es que no encuentra el servidor: confirma que está activo el puerto 4000 y se reconectará solo.
+
+### La base de datos nunca deja de conectarse
+
+- El servidor **no se detiene** si MySQL/XAMPP se apaga: sigue escuchando y responde los estados de salud.
+- Cuando MySQL vuelve, el checador y la web se **reconectan automáticamente** (pool con `keep-alive`, reintentos automáticos y heartbeat cada 25s).
+- Consulta el estado en cualquier momento:
+
+  ```bash
+  curl http://localhost:4000/api/health
+  # {"status":"ok","database":"connected"}
+  ```
+
+- Si el servidor se cae por completo, PM2 lo levanta solo (ver sección siguiente).
+
 ### Arrancar el servidor como servicio (opcional, recomendado)
 
 Con PM2 el servidor se reinicia solo si se cae y arranca con Windows:

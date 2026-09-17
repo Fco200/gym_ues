@@ -12,12 +12,13 @@
     "dist": "electron-builder"
   },
   "devDependencies": {
-    "electron": "^44.4.1",
+    "electron": "44.4.1",
     "electron-builder": "^26.15.3"
   },
   "build": {
     "appId": "ues.gym.checador",
     "productName": "Gym UES Checador",
+    "electronVersion": "44.4.1",
     "files": [
       "main.js",
       "waiting.html",

@@ -23,11 +23,22 @@ const authRoutes = require('./routes/auth.routes');
 const studentRoutes = require('./routes/students.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
 const userRoutes = require('./routes/users.routes');
+const pool = require('./config/db');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/users', userRoutes);
+
+// Estado de salud del servidor y su conexión a la base de datos
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', database: 'connected' });
+  } catch {
+    res.status(503).json({ status: 'degraded', database: 'disconnected' });
+  }
+});
 
 // En producción, Express también sirve el frontend construido (SPA)
 const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
