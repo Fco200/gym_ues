@@ -200,6 +200,45 @@ pm2 save
 
 > Los archivos `.env` **no se suben** (contienen la configuración local). Cada equipo crea el suyo a partir de `.env.example`.
 
+## Desplegar en Render (producción en internet)
+
+El proyecto incluye un **blueprint** (`render.yaml`) que prepara todo. Lo que falta al llegar es introducir las credenciales de tu MySQL de producción y un disco para las fotos.
+
+### Paso a paso
+
+1. Sube este repositorio a GitHub (sección anterior).
+2. Entra a [render.com](https://render.com), crea una cuenta y conecta tu GitHub.
+3. En el Dashboard: **New → Blueprint** → selecciona el repo `gym_ues`.
+4. Render leerá `render.yaml` y creará el servicio web `gym-ues`.
+5. Ve a **Dashboard → gym-ues → Environment** y llena las variables pendientes (las deja `sync: false` para que las definas tú):
+
+   | Variable | Valor |
+   |---|---|
+   | `DB_HOST` | Host de tu MySQL de producción |
+   | `DB_PORT` | Puerto (normalmente `3306`) |
+   | `DB_USER` | Usuario de la base de datos |
+   | `DB_PASSWORD` | Contraseña |
+   | `DB_NAME` | Nombre de la base (ej. `gym_ues_db`) |
+
+6. Carga el esquema por primera vez en tu MySQL de producción ejecutando `backend/database.sql` (phpMyAdmin o consola). Guarda bien las credenciales (las necesitaremos mañana).
+7. Guarda los cambios: Render hará un nuevo despliegue automático.
+8. La app quedará en `https://gym-ues.onrender.com` (web + API + checador web + `/api/health`).
+
+### Detalles técnicos del despliegue
+
+- **Un solo puerto y una sola URL**: Express sirve la web y la API juntas (`/api` relativo, sin depender de dominios).
+- **Fotos y certificados**: se guardan en un **disco persistente** montado en `/opt/render/project/data` (la carpeta `uploads` local es efímera en Render).
+- **El checador de escritorio NO se sube a Render** (el blueprint instala solo backend + frontend). El kiosco siempre apunta a tu servidor local (`localhost:4000`) o a cualquier URL vía `--url`.
+- **Plan gratuito**: el servicio entra en *sleep* tras un rato sin uso y tarda ~30s en despertar. Si necesitas disponibilidad 24/7, usa el plan *Starter* (~$7/mes). Para el gimnasio, el checador local sigue siendo el principal.
+
+### Pendiente para mañana (levantar el servidor)
+
+- [ ] Identificador único del servicio en Render (se asigna automáticamente).
+- [ ] `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` del MySQL de producción.
+- [ ] Ejecutar `backend/database.sql` en ese MySQL.
+- [ ] Decidir plan (gratis con *sleep* o starter 24/7).
+- [ ] Confirmar `https://gym-ues.onrender.com/api/health` → `{"status":"ok","database":"connected"}`.
+
 ## Funcionalidades
 
 - Login, recuperación y cambio de contraseña (administradores e instructores).

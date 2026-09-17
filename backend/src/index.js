@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // Archivos estáticos (fotografías de alumnos subidas al servidor)
-const uploadsDir = path.join(__dirname, '..', 'uploads');
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
 app.use('/uploads', express.static(uploadsDir));
 
 // Rutas de la API

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Sistema de control del Gimnasio UES - Universidad Estatal de Sonora",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "workspaces": [
     "backend",
     "frontend",

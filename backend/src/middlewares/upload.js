@@ -2,7 +2,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const UPLOADS_DIR = path.join(__dirname, '..', '..', 'uploads');
+// Configurable por variable de entorno (en Render se apunta al disco persistente)
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '..', '..', 'uploads');
 
 // Garantizar que el directorio de subidas exista
 if (!fs.existsSync(UPLOADS_DIR)) {
