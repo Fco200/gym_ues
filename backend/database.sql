@@ -19,13 +19,16 @@ USE gym_ues_db;
 --                apellido_paterno VARCHAR(100) NOT NULL,
 --                apellido_materno VARCHAR(100) NULL,
 --                lastname (columna legacy para reportes),
+--                member_type ENUM('estudiante','mto','externo') DEFAULT 'estudiante',
 --                gender ENUM('Masculino','Femenino','Otro'),
---                turn ENUM('mañana','tarde'),
+--                turn ENUM('mañana','tarde','general'),
 --                career VARCHAR(150) NULL,
 --                image_url VARCHAR(255), certificate_file VARCHAR(255),
 --                medical_certificate TINYINT(1), created_at)
 --   attendance  (id, user_id NULL, student_id NULL, type
 --                ENUM('entrada','salida'), timestamp)
+--   settings    (id, setting_key UNI, setting_value, updated_at)
+--                keys: reglamento_pdf | horario_pdf | reglamento_text | horario(JSON)
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
@@ -36,6 +39,12 @@ USE gym_ues_db;
 --   ADD COLUMN certificate_file VARCHAR(255) DEFAULT NULL AFTER image_url;
 -- ALTER TABLE students ADD COLUMN career VARCHAR(150) DEFAULT NULL AFTER turn;
 -- UPDATE students SET apellido_paterno = SUBSTRING_INDEX(lastname,' ',1), ...;
+-- -------
+-- Las siguientes se aplican automáticamente al iniciar el backend:
+-- ALTER TABLE students ADD COLUMN member_type ENUM('estudiante','mto','externo')
+--   NOT NULL DEFAULT 'estudiante' AFTER lastname;
+-- ALTER TABLE students MODIFY COLUMN turn ENUM('mañana','tarde','general') NOT NULL DEFAULT 'mañana';
+-- CREATE TABLE IF NOT EXISTS settings (...);
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------

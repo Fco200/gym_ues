@@ -23,12 +23,18 @@ const authRoutes = require('./routes/auth.routes');
 const studentRoutes = require('./routes/students.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
 const userRoutes = require('./routes/users.routes');
+const settingsRoutes = require('./routes/settings.routes');
 const pool = require('./config/db');
+const { runMigrations } = require('./config/migrations');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/settings', settingsRoutes);
+
+// Migraciones idempotentes: agregan columnas/tablas faltantes sin romper nada
+runMigrations();
 
 // Estado de salud del servidor y su conexión a la base de datos
 app.get('/api/health', async (req, res) => {

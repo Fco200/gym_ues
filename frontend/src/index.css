@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap');
 
 /* =====================================================
    Sistema Gym UES - Design System
-   Resolución base: 1440 x 1024 · Paleta institucional UES
+   ResoluciÃ³n base: 1440 x 1024 Â· Paleta institucional UES
    ===================================================== */
 
 :root {
@@ -26,7 +26,7 @@
   --text-muted: #69707c;
   --text-soft: #9aa1ac;
 
-  /* Semánticos */
+  /* SemÃ¡nticos */
   --success: #16803b;
   --success-dark: #0f5c2b;
   --success-bg: #e4f4ea;
@@ -380,7 +380,7 @@ btn-ghost,
   border-left-color: var(--warning);
 }
 
-/* Banner de confirmación (eliminar / aceptar) */
+/* Banner de confirmaciÃ³n (eliminar / aceptar) */
 
 .confirm-banner {
   display: flex;
@@ -640,7 +640,7 @@ btn-ghost,
   background: var(--gold-bright);
 }
 
-/* Menú desplegable de perfil */
+/* MenÃº desplegable de perfil */
 
 .profile-wrap {
   position: relative;
@@ -1073,7 +1073,7 @@ btn-ghost,
   background: #9e1f2c;
 }
 
-/* ---------- Reportes: gráfica de barras ---------- */
+/* ---------- Reportes: grÃ¡fica de barras ---------- */
 
 .chart {
   display: flex;
@@ -1219,7 +1219,7 @@ btn-ghost,
   min-width: 220px;
 }
 
-/* ---------- Certificado médico ---------- */
+/* ---------- Certificado mÃ©dico ---------- */
 
 .cert-panel {
   background: linear-gradient(140deg, #fbf3e3, #fdf6ea);
@@ -1304,15 +1304,15 @@ btn-ghost,
 }
 
 /* =====================================================
-   Agregados: búsqueda, radios de sexo, toasts, drawer,
-   checador v2, palomita de éxito, salida del sistema
+   Agregados: bÃºsqueda, radios de sexo, toasts, drawer,
+   checador v2, palomita de Ã©xito, salida del sistema
    ===================================================== */
 
 .text-soft {
   color: var(--text-soft);
 }
 
-/* ----- Barra de búsqueda / agregar (debajo de la tabla) ----- */
+/* ----- Barra de bÃºsqueda / agregar (debajo de la tabla) ----- */
 
 .search-bar-card {
   margin-top: 20px;
@@ -1330,7 +1330,7 @@ btn-ghost,
   min-width: 220px;
 }
 
-/* ----- Columnas: certificado médico ----- */
+/* ----- Columnas: certificado mÃ©dico ----- */
 
 .cert-cell {
   display: flex;
@@ -1402,7 +1402,7 @@ btn-ghost,
   border-color: var(--danger);
 }
 
-/* ----- Radio de sexo (círculo con punto de relleno) ----- */
+/* ----- Radio de sexo (cÃ­rculo con punto de relleno) ----- */
 
 .sexo-options {
   display: grid;
@@ -1598,7 +1598,7 @@ btn-ghost,
   color: var(--text);
 }
 
-/* ----- Toast de éxito (rectangular, al centro de la pantalla) ----- */
+/* ----- Toast de Ã©xito (rectangular, al centro de la pantalla) ----- */
 
 .toast {
   position: fixed;
@@ -1644,7 +1644,7 @@ btn-ghost,
   border-radius: 2px;
 }
 
-/* ----- Palomita de éxito (dibujo animado) ----- */
+/* ----- Palomita de Ã©xito (dibujo animado) ----- */
 
 .success-check {
   width: 84px;
@@ -1710,7 +1710,7 @@ btn-ghost,
   to { transform: rotate(360deg); }
 }
 
-/* Spinner genérico para botones */
+/* Spinner genÃ©rico para botones */
 .spinner {
   display: inline-block;
   width: 20px;
@@ -1841,7 +1841,7 @@ btn-ghost,
   margin-left: 6px;
 }
 
-/* ----- Drawer / menú hamburguesa ----- */
+/* ----- Drawer / menÃº hamburguesa ----- */
 
 .drawer-overlay {
   position: fixed;
@@ -1907,4 +1907,70 @@ btn-ghost,
   font-size: 12px;
   color: var(--text-muted);
   padding: 8px 4px;
+}
+/* =========================================================
+   Opciones del modal "quÃ© tipo de usuario" (Nuevo acceso)
+   ========================================================= */
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12;
+}
+
+
+
+/* ---------- Selector de tipo de integrante (checador) ---------- */
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.option-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 18px 16px;
+  border: 1px solid var(--border, #e6e8ef);
+  border-radius: 14px;
+  background: var(--card, #ffffff);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  font: inherit;
+  color: inherit;
+}
+.option-card:hover {
+  border-color: var(--primary, #4e75c8);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
+}
+.option-card strong {
+  font-size: 14px;
+}
+.option-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(78, 117, 200, 0.12);
+  color: var(--primary, #4e75c8);
+}
+.option-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted, #6b7280);
+}
+.option-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary, #4e75c8);
+}
+@media (max-width: 640px) {
+  .option-grid { grid-template-columns: 1fr; }
 }

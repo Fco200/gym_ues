@@ -31,12 +31,21 @@ const registerAttendance = async (req, res) => {
 
     const fullName = `${student.name} ${student.apellido_paterno || ''} ${student.apellido_materno || ''}`.replace(/\s+/g, ' ').trim();
 
+    const typeLabel = student.member_type === 'mto'
+      ? 'MTO'
+      : student.member_type === 'externo'
+        ? 'Persona externa'
+        : 'Alumno';
+
     res.json({
       message: `¡${type.charAt(0).toUpperCase() + type.slice(1)} registrada con éxito!`,
       student: {
         student_number: student.student_number,
         name: fullName,
         turn: student.turn,
+        member_type: student.member_type || 'estudiante',
+        type_label: typeLabel,
+        image_url: student.image_url || null,
         medical_certificate: Boolean(student.medical_certificate)
       }
     });

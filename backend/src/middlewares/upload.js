@@ -21,8 +21,13 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // El certificado puede ser PDF o cualquier extensión de documento
+  // Certificado médico: PDF o cualquier extensión de documento
   if (file.fieldname === 'certificate') {
+    cb(null, true);
+    return;
+  }
+  // Documentos oficiales (PDF del reglamento u horario)
+  if (file.fieldname === 'document') {
     cb(null, true);
     return;
   }

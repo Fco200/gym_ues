@@ -1,11 +1,42 @@
 const pool = require('../config/db');
 
+// Tipos de integrante del gimnasio (con o sin expediente tipo "alumno")
+const MEMBER_TYPES = ['estudiante', 'mto', 'externo'];
+
 // Normaliza el género a los valores válidos de la base de datos
 const GENDERS = ['Masculino', 'Femenino', 'Otro'];
 function normalizeGender(value) {
   if (!value) return null;
   const match = GENDERS.find((g) => g.toLowerCase() === String(value).toLowerCase());
   return match || value;
+}
+
+function normalizeMemberType(value) {
+  if (!value) return 'estudiante';
+  const match = MEMBER_TYPES.find((m) => m.toLowerCase() === String(value).toLowerCase());
+  return match || 'estudiante';
+}
+
+// Genera una clave de acceso única para el checador (personas externas)
+function generateExternalKey() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let suffix = '';
+  for (let i = 0; i < 5; i += 1) {
+    suffix += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return `EXT-${suffix}`;
+}
+
+// Separa un nombre completo en nombre / apellido paterno / apellido materno
+function splitFullName(fullName) {
+  const parts = String(fullName || '').trim().split(/\s+/);
+  if (parts.length === 1) return { name: parts[0], paterno: null, materno: null };
+  if (parts.length === 2) return { name: parts[0], paterno: parts[1], materno: null };
+  return {
+    name: parts[0],
+    paterno: parts[parts.length - 2],
+    materno: parts[parts.length - 1]
+  };
 }
 
 // Devuelve la ruta pública del archivo (foto o certificado) subido
@@ -28,7 +59,8 @@ function splitLegacy(lastname) {
   return { paterno: parts[0] || null, materno: parts.slice(1).join(' ') || null };
 }
 
-// Registrar un nuevo alumno (enviar archivos: 'image' y 'certificate' opcionales en multipart)
+// Registrar un nuevo integrante (estudiante, MTO o persona externa)
+// Archivos multipart opcionales: 'image' (foto) y 'certificate' (certificado médico)
 const createStudent = async (req, res) => {
   const {
     student_number,
@@ -39,64 +71,111 @@ const createStudent = async (req, res) => {
     gender,
     turn,
     career,
-    medical_certificate
+    medical_certificate,
+    member_type
   } = req.body;
 
   try {
+    const type = normalizeMemberType(member_type);
     const legacy = splitLegacy(lastname);
-    const paterno = apellido_paterno || legacy.paterno;
-    const materno = apellido_materno !== undefined ? apellido_materno : legacy.materno;
+    let paterno = apellido_paterno || legacy.paterno;
+    let materno = apellido_materno !== undefined ? apellido_materno : legacy.materno;
 
-    if (!student_number || !name || !paterno || !gender || !turn) {
+    // MTO y externos registran su nombre completo (se separa en apellidos)
+    let finalName = name ? name.trim() : '';
+    if (type !== 'estudiante') {
+      if (paterno && !materno) materno = null;
+      if (!paterno) {
+        const split = splitFullName(finalName);
+        finalName = split.name;
+        paterno = split.paterno;
+        materno = split.materno;
+      }
+    }
+
+    // Clave para el checador: número de empleado (MTO) o clave generada (externo)
+    let finalNumber = student_number ? String(student_number).trim() : '';
+    if (type === 'externo' && !finalNumber) {
+      finalNumber = generateExternalKey();
+      // Asegurar unicidad de la clave generada
+      for (let guard = 0; guard < 20; guard += 1) {
+        const [dup] = await pool.query('SELECT id FROM students WHERE student_number = ?', [finalNumber]);
+        if (dup.length === 0) break;
+        finalNumber = generateExternalKey();
+      }
+    }
+
+    // Validaciones según el tipo
+    if (!finalName || !paterno) {
       return res.status(400).json({
-        error: 'Faltan datos obligatorios del alumno (nombre, apellido paterno, sexo, expediente y turno)'
+        error: 'Faltan datos obligatorios (nombre y apellido paterno)'
+      });
+    }
+    if (!finalNumber) {
+      return res.status(400).json({
+        error: 'Falta la clave de acceso para el checador'
+      });
+    }
+    if (type === 'estudiante') {
+      if (!gender || !turn) {
+        return res.status(400).json({
+          error: 'Faltan datos obligatorios del alumno (sexo, expediente y turno)'
+        });
+      }
+    } else if (type === 'mto' && !String(student_number).trim()) {
+      return res.status(400).json({
+        error: 'Ingresa el número de empleado del MTO (será su clave para el checador)'
       });
     }
 
-    // Evitar expedientes duplicados
-    const [exist] = await pool.query('SELECT id FROM students WHERE student_number = ?', [
-      student_number.trim()
-    ]);
+    // Evitar claves/expedientes duplicados
+    const [exist] = await pool.query('SELECT id FROM students WHERE student_number = ?', [finalNumber]);
     if (exist.length > 0) {
-      return res.status(400).json({ error: 'Ese número de expediente ya está registrado' });
+      return res.status(400).json({ error: 'Esa clave de acceso ya está registrada' });
     }
 
     const image_url = resolveFile(req, 'image') || req.body.image_url || null;
     const certificate_file = resolveFile(req, 'certificate') || req.body.certificate_file || null;
+    const finalTurn = type === 'estudiante' ? turn : 'general';
+    const finalGender = type === 'estudiante' ? normalizeGender(gender) : normalizeGender(gender) || 'Otro';
 
     const [result] = await pool.query(
       `INSERT INTO students
          (student_number, name, apellido_paterno, apellido_materno, lastname,
-          gender, turn, career, image_url, certificate_file, medical_certificate)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          gender, turn, career, image_url, certificate_file, medical_certificate, member_type)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        student_number.trim(),
-        name,
+        finalNumber,
+        finalName,
         paterno,
         materno || null,
         buildLastname(paterno, materno),
-        normalizeGender(gender),
-        turn,
+        finalGender,
+        finalTurn,
         career || null,
         image_url,
         certificate_file,
-        medical_certificate ? 1 : 0
+        medical_certificate ? 1 : 0,
+        type
       ]
     );
 
+    const typeLabel = type === 'estudiante' ? 'Alumno' : type === 'mto' ? 'MTO' : 'Persona externa';
     res.status(201).json({
-      message: '¡Alumno creado con éxito!',
-      studentId: result.insertId
+      message: `¡${typeLabel} creado con éxito!`,
+      studentId: result.insertId,
+      student_number: finalNumber,
+      member_type: type
     });
   } catch (error) {
-    console.error('Error al registrar alumno:', error);
-    res.status(500).json({ error: 'Error interno al registrar el alumno' });
+    console.error('Error al registrar integrante:', error);
+    res.status(500).json({ error: 'Error interno al registrar el integrante' });
   }
 };
 
-// Ver lista de alumnos (por turno y/o búsqueda por expediente, nombre o apellidos)
+// Ver lista de integrantes (por turno, tipo y/o búsqueda)
 const getStudents = async (req, res) => {
-  const { turn, q } = req.query;
+  const { turn, q, member_type } = req.query;
 
   try {
     let query = 'SELECT * FROM students';
@@ -106,6 +185,15 @@ const getStudents = async (req, res) => {
     if (turn) {
       conditions.push('turn = ?');
       params.push(turn);
+    }
+
+    if (member_type) {
+      if (String(member_type).toLowerCase() === 'access') {
+        conditions.push("member_type IN ('mto','externo')");
+      } else {
+        conditions.push('member_type = ?');
+        params.push(normalizeMemberType(member_type));
+      }
     }
 
     if (q && String(q).trim()) {
@@ -125,12 +213,12 @@ const getStudents = async (req, res) => {
     const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
-    console.error('Error al obtener alumnos:', error);
+    console.error('Error al obtener integrantes:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 
-// Actualizar datos del expediente completo de un alumno
+// Actualizar datos del expediente completo de un alumno o integrante
 const updateStudent = async (req, res) => {
   const { id } = req.params;
   const {
@@ -142,7 +230,8 @@ const updateStudent = async (req, res) => {
     gender,
     turn,
     career,
-    medical_certificate
+    medical_certificate,
+    member_type
   } = req.body;
 
   try {
@@ -183,7 +272,8 @@ const updateStudent = async (req, res) => {
          career = COALESCE(?, career),
          image_url = COALESCE(?, image_url),
          certificate_file = COALESCE(?, certificate_file),
-         medical_certificate = COALESCE(?, medical_certificate)
+         medical_certificate = COALESCE(?, medical_certificate),
+         member_type = COALESCE(?, member_type)
        WHERE id = ?`,
       [
         newNumber || null,
@@ -197,6 +287,7 @@ const updateStudent = async (req, res) => {
         newImage || null,
         newCertificate || null,
         medical_certificate === undefined ? null : medical_certificate ? 1 : 0,
+        member_type ? normalizeMemberType(member_type) : null,
         id
       ]
     );

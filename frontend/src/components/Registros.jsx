@@ -105,6 +105,9 @@ export default function Registros() {
     const exp = expedienteQ.trim().toLowerCase();
     const nam = nameQ.trim().toLowerCase();
     return students.filter((s) => {
+      // La página de registros administra únicamente estudiantes:
+      // MTO y externos se gestionan desde la página de Usuarios.
+      if (s.member_type && s.member_type !== 'estudiante') return false;
       const matchesExp = !exp || (s.student_number || '').toLowerCase().includes(exp);
       const haystack = [s.name, s.apellido_paterno, s.apellido_materno, s.lastname]
         .filter(Boolean)
@@ -566,8 +569,7 @@ function HistoryModal({ student, onClose }) {
   );
 }
 
-function StudentFormModal({ student, defaultTurn, onClose, onSaved }) {
-  const isNew = !student;
+export function StudentFormModal({ student, defaultTurn, onClose, onSaved }) {  const isNew = !student;
   const [form, setForm] = useState({
     student_number: student?.student_number || '',
     name: student?.name || '',
@@ -615,6 +617,7 @@ function StudentFormModal({ student, defaultTurn, onClose, onSaved }) {
       fd.append('gender', form.gender);
       fd.append('turn', form.turn);
       fd.append('career', form.career);
+      fd.append('member_type', 'estudiante');
       fd.append('medical_certificate', form.medical_certificate ? '1' : '0');
       if (photo) fd.append('image', photo);
       if (certificate) fd.append('certificate', certificate);
