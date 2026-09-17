@@ -2,6 +2,10 @@ const { app, BrowserWindow } = require('electron');
 const http = require('http');
 const path = require('path');
 
+// Permite peticiones locales HTTPS sin certificado autofirmado/confiable
+// (necesario para el agente local de DigitalPersona en https://127.0.0.1:52181)
+app.commandLine.appendSwitch('ignore-certificate-errors');
+
 // ============================================================================
 // Configuración de la URL del checador
 //  1. Argumento:  electron . --url=http://localhost:5173/checador

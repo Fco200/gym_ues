@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import Checador from './components/Checador';
+import RegistroAlumno from './components/RegistroAlumno';
 import Dashboard from './components/Dashboard';
 import Registros from './components/Registros';
 import Reportes from './components/Reportes';
@@ -20,6 +21,7 @@ export default function App() {
       />
 
       <Route path="/checador" element={<Checador />} />
+      <Route path="/registro-alumno" element={<RegistroAlumno />} />
 
       <Route path="/dashboard" element={<Dashboard />}>
         <Route index element={<Navigate to="registros" replace />} />

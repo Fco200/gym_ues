@@ -72,7 +72,8 @@ const createStudent = async (req, res) => {
     turn,
     career,
     medical_certificate,
-    member_type
+    member_type,
+    fingerprint_template
   } = req.body;
 
   try {
@@ -131,19 +132,23 @@ const createStudent = async (req, res) => {
     // Evitar claves/expedientes duplicados
     const [exist] = await pool.query('SELECT id FROM students WHERE student_number = ?', [finalNumber]);
     if (exist.length > 0) {
-      return res.status(400).json({ error: 'Esa clave de acceso ya está registrada' });
+      return res.status(409).json({
+        error: 'Ese número de expediente / clave de acceso ya está registrado'
+      });
     }
 
     const image_url = resolveFile(req, 'image') || req.body.image_url || null;
     const certificate_file = resolveFile(req, 'certificate') || req.body.certificate_file || null;
     const finalTurn = type === 'estudiante' ? turn : 'general';
     const finalGender = type === 'estudiante' ? normalizeGender(gender) : normalizeGender(gender) || 'Otro';
+    const fingerprint = fingerprint_template ? String(fingerprint_template).trim() : null;
 
     const [result] = await pool.query(
       `INSERT INTO students
          (student_number, name, apellido_paterno, apellido_materno, lastname,
-          gender, turn, career, image_url, certificate_file, medical_certificate, member_type)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          gender, turn, career, image_url, certificate_file, medical_certificate, member_type,
+          fingerprint_template)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         finalNumber,
         finalName,
@@ -156,7 +161,8 @@ const createStudent = async (req, res) => {
         image_url,
         certificate_file,
         medical_certificate ? 1 : 0,
-        type
+        type,
+        fingerprint
       ]
     );
 
@@ -218,6 +224,24 @@ const getStudents = async (req, res) => {
   }
 };
 
+// Lista de integrantes con huella registrada, para la verificación biométrica 1:N
+// (utilizada por el Checador para identificar el expediente a partir de la huella)
+const getBiometrics = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, student_number, name, apellido_paterno, apellido_materno, lastname,
+              gender, turn, image_url, fingerprint_template
+       FROM students
+       WHERE fingerprint_template IS NOT NULL AND TRIM(fingerprint_template) <> ''
+       ORDER BY name ASC, apellido_paterno ASC`
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error('Error al obtener huellas registradas:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 // Actualizar datos del expediente completo de un alumno o integrante
 const updateStudent = async (req, res) => {
   const { id } = req.params;
@@ -249,7 +273,7 @@ const updateStudent = async (req, res) => {
         id
       ]);
       if (dup.length > 0) {
-        return res.status(400).json({ error: 'Ese número de expediente ya está registrado' });
+        return res.status(409).json({ error: 'Ese número de expediente ya está registrado' });
       }
     }
 
@@ -354,6 +378,7 @@ const deleteStudent = async (req, res) => {
 module.exports = {
   createStudent,
   getStudents,
+  getBiometrics,
   updateStudent,
   updateMedicalCertificate,
   deleteStudent

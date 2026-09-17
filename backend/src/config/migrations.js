@@ -40,6 +40,18 @@ async function runMigrations() {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
     );
+
+    // 4) students.fingerprint_template: template biométrico (huella) del alumno
+    const [fingerprintCol] = await pool.query(
+      `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'students' AND COLUMN_NAME = 'fingerprint_template'`
+    );
+    if (fingerprintCol.length === 0) {
+      await pool.query(
+        `ALTER TABLE students ADD COLUMN fingerprint_template MEDIUMTEXT NULL AFTER image_url`
+      );
+      console.log('✅ Migración: columna students.fingerprint_template agregada.');
+    }
   } catch (error) {
     console.error('⚠️  No se pudieron aplicar las migraciones:', error.message);
   }

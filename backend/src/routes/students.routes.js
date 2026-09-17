@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createStudent,
   getStudents,
+  getBiometrics,
   updateStudent,
   updateMedicalCertificate,
   deleteStudent
@@ -16,6 +17,9 @@ const FIELDS = [
 
 router.post('/', upload.fields(FIELDS), createStudent);
 router.get('/', getStudents);
+
+// Registros biométricos (alumnos con huella) para verificación 1:N en el checador
+router.get('/biometrics', getBiometrics);
 
 // Expediente del alumno (acepta imagen y/o certificado opcionales)
 router.patch('/:id', upload.fields(FIELDS), updateStudent);
