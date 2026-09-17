@@ -6,86 +6,169 @@ Sistema de control del **Gimnasio UES** (Universidad Estatal de Sonora): checado
 
 ```
 gym-ues-project/
-├── backend/     → API (Node.js + Express 5 + MySQL) en el puerto 4000
+├── backend/     → API (Node.js + Express 5 + MySQL) — puerto 4000
 ├── frontend/    → Aplicación web (React 19 + Vite) para administración
 ├── desktop/     → Checador de escritorio (Electron, modo kiosco)
-└── package.json → Monorepo (npm workspaces) + scripts unificados
+├── package.json → Monorepo (npm workspaces) + scripts unificados
+└── iniciar-sistema.bat → Arranque rápido en Windows (servidor + checador)
 ```
+
+> **Un solo puerto en producción:** Express sirve la web y la API juntas en `http://localhost:4000`
+> (la app web en `/` y el checador en `/checador`). Solo el modo de desarrollo usa dos puertos.
 
 ## Requisitos
 
 - Node.js 20+ y npm 9+
-- MySQL (phpMyAdmin/XAMPP) con la base `gym_ues_db` (esquema en `backend/database.sql`)
+- XAMPP (MySQL) con la base `gym_ues_db` (esquema en `backend/database.sql`)
 
 ## Configuración inicial
 
-En `backend/.env` ajusta tu base de datos (por defecto: `localhost:3307`, usuario `root`, sin contraseña):
+1. **Enciende XAMPP** y arranca el servicio de **MySQL**.
+2. Copia los archivos de entorno de ejemplo:
 
-```
-PORT=4000
-DB_HOST=localhost
-DB_PORT=3307
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=gym_ues_db
-```
+   ```bash
+   copy backend\.env.example backend\.env
+   copy frontend\.env.example frontend\.env
+   ```
 
-Ejecuta `backend/database.sql` una sola vez para tener el esquema y las cuentas iniciales:
+3. Verifica `backend/.env` con los datos de tu MySQL (XAMPP usa por defecto el puerto **3306**):
 
-| Usuario | Correo | Contraseña | Rol |
-|---|---|---|---|
-| Super Admin | `admin@gymues.com` | `admin123` | super_admin |
-| Instructor mañana | `manana@gymues.com` | `manana123` | maestro_mañana |
-| Instructora tarde | `tarde@gymues.com` | `tarde123` | maestro_tarde |
+   ```
+   PORT=4000
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=
+   DB_NAME=gym_ues_db
+   ```
 
-## Comandos (desde la raíz del proyecto)
+   > Si usas el MySQL de XAMPP, cambia `DB_PORT` a `3306`. El valor `3307` solo aplica si así lo configuraste.
 
-### Un solo comando, todo en marcha (desarrollo)
+4. Ejecuta `backend/database.sql` una sola vez (desde phpMyAdmin o consola) para tener el esquema y las cuentas iniciales:
+
+   | Usuario | Correo | Contraseña | Rol |
+   |---|---|---|---|
+   | Super Admin | `admin@gymues.com` | `admin123` | super_admin |
+   | Instructor mañana | `manana@gymues.com` | `manana123` | maestro_mañana |
+   | Instructora tarde | `tarde@gymues.com` | `tarde123` | maestro_tarde |
+
+5. Instala las dependencias:
+
+   ```bash
+   npm install
+   ```
+
+## Modo desarrollo
 
 ```bash
 npm run dev
 ```
 
-Levanta la **API** (`http://localhost:4000`) y la **web** (`http://localhost:5173`) al mismo tiempo.
+Levanta la **API** (`http://localhost:4000`) y la **web con recarga en vivo** (`http://localhost:5173`).
 
-### Producción (un solo puerto, Express sirve todo)
+## Modo producción (un solo comando, un solo puerto)
 
 ```bash
 npm start
 ```
 
-Compila el frontend y lo sirve Express en `http://localhost:4000` (la app web y la API comparten puerto). Acceso a la web: `http://localhost:4000` · Checador: `http://localhost:4000/checador`.
+Compila el frontend y lo sirve junto con la API en **`http://localhost:4000`**:
 
-### Checador de escritorio (kiosco siempre activo)
+- Aplicación web → `http://localhost:4000`
+- Checador web → `http://localhost:4000/checador`
+- API → `http://localhost:4000/api`
+
+## Checador de escritorio (kiosco siempre activo)
+
+Con el servidor corriendo en el puerto 4000:
 
 ```bash
-npm start
-# en otra terminal…
 npm run desktop
 ```
 
-- Lanza Electron en **pantalla completa** conectado a `http://localhost:4000/checador`.
-- Si el servidor no responde, muestra una pantalla de espera con reloj y se reconecta automáticamente.
+- Abre el checador en **pantalla completa (modo kiosco)**.
+- Si el servidor no responde, muestra una pantalla de espera con reloj y se **reconecta solo**.
 - Salir del modo kiosco: `Ctrl + Alt + Q` (o `Ctrl + Shift + X`).
-- En modo ventana: `npm run desktop -- --windowed`.
-- Apuntarlo al servidor de desarrollo Vite: `npm run desktop:dev`.
+- Modo ventana (pruebas): `npm run desktop -- --windowed`.
+- Apuntar al servidor de desarrollo Vite: `npm run desktop:dev`.
 
-### Empaquetar el instalador de Windows (.exe) del checador
+### Levantar TODO de una sola vez
+
+```bash
+npm run start:all
+```
+
+Compila, levanta el servidor y abre el kiosco. En Windows también puedes hacer doble clic en `iniciar-sistema.bat`.
+
+### Arrancar el checador con Windows (arranque automático)
+
+Activa el inicio automático del kiosco al encender la computadora:
+
+```bash
+npm run autostart:on
+# desactivar:
+npm run autostart:off
+```
+
+### Generar el instalador (.exe) del checador
 
 ```bash
 npm run dist:desktop
 ```
 
-Genera el instalador en `desktop/dist/`.
+El instalador queda en `desktop/dist/`. Instálalo en la computadora de la entrada del gimnasio.
 
-### Otros
+### Arrancar el servidor como servicio (opcional, recomendado)
 
-| Comando | Descripción |
-|---|---|
-| `npm run dev:client` | Solo el frontend (Vite) |
-| `npm run dev:server` | Solo el backend (nodemon) |
-| `npm run build` | Compila el frontend |
-| `npm run lint` | Lint del frontend |
+Con PM2 el servidor se reinicia solo si se cae y arranca con Windows:
+
+```bash
+npm install -g pm2
+pm2 start ecosystem.config.cjs
+pm2 save
+```
+
+## Publicar en GitHub (paso a paso)
+
+1. **Inicializa el repositorio** (una sola vez, en la raíz del proyecto):
+
+   ```bash
+   git init
+   git add .
+   git commit -m "Sistema Gym UES listo para produccion"
+   git branch -M main
+   ```
+
+   > `.gitignore` ya excluye `node_modules`, `dist`, `.env` y logs.
+
+2. **Crea el repositorio en GitHub**: entra a [github.com/new](https://github.com/new), ponle nombre (por ejemplo `gym-ues-project`), déjalo vacío (sin README) y crea.
+
+3. **Conecta y sube el proyecto** (reemplaza `TU-USUARIO`):
+
+   ```bash
+   git remote add origin https://github.com/TU-USUARIO/gym-ues-project.git
+   git push -u origin main
+   ```
+
+4. **En otra computadora** clona el proyecto:
+
+   ```bash
+   git clone https://github.com/TU-USUARIO/gym-ues-project.git
+   cd gym-ues-project
+   npm install
+   copy backend\.env.example backend\.env
+   copy frontend\.env.example frontend\.env
+   ```
+
+5. A partir de ahí, cada cambio se sube con:
+
+   ```bash
+   git add .
+   git commit -m "Descripcion del cambio"
+   git push
+   ```
+
+> Los archivos `.env` **no se suben** (contienen la configuración local). Cada equipo crea el suyo a partir de `.env.example`.
 
 ## Funcionalidades
 
@@ -95,12 +178,17 @@ Genera el instalador en `desktop/dist/`.
 - **Historial del checador** por alumno y **reportes mensuales** con gráfica.
 - Horarios por turno y reglamento en PDF.
 - **Gestión de usuarios** (solo super administrador): crear/editar/eliminar administradores e instructores.
+- Interfaz con iconos en todos los botones y animaciones en avisos y ventanas.
 
+## Comandos útiles
 
-echo "# gym_ues" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/Fco200/gym_ues.git
-git push -u origin main
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Desarrollo: API + web con recarga |
+| `npm start` | Producción: web + API en el puerto 4000 |
+| `npm run start:all` | Producción + checador kiosco |
+| `npm run desktop` | Solo el checador de escritorio |
+| `npm run dist:desktop` | Instalador `.exe` del checador |
+| `npm run autostart:on` | Arrancar el checador con Windows |
+| `npm run build` | Compila el frontend |
+| `npm run lint` | Lint del frontend |

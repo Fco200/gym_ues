@@ -17,8 +17,11 @@
     "start": "npm run build && npm run start:server",
     "start:server": "npm start --workspace backend",
     "start:all": "npm run build && concurrently -k -n API,DESKTOP -c cyan,magenta \"npm run start:server\" \"npm run desktop\"",
+    "prod": "npm run start:all",
     "desktop": "npm run start --workspace desktop",
     "desktop:dev": "npm run dev --workspace desktop",
+    "autostart:on": "npm run autostart --workspace desktop",
+    "autostart:off": "npm run no-autostart --workspace desktop",
     "dist:desktop": "npm run dist --workspace desktop",
     "lint": "npm run lint --workspace frontend"
   },

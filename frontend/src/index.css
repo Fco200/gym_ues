@@ -166,16 +166,25 @@ button {
   color: var(--text);
   background: #eceff4;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
   white-space: nowrap;
 }
 
+.btn svg {
+  transition: transform 0.2s ease;
+}
+
 .btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -12px rgba(43, 16, 24, 0.45);
+}
+
+.btn:hover svg {
+  transform: scale(1.15);
 }
 
 .btn:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 .btn:disabled {
@@ -313,38 +322,107 @@ btn-ghost,
 /* ---------- Alertas ---------- */
 
 .alert {
-  padding: 14px 18px;
+  padding: 15px 20px;
   border-radius: var(--radius);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   border: 1px solid transparent;
+  border-left-width: 6px;
+  box-shadow: 0 12px 26px -18px rgba(43, 16, 24, 0.5);
+  animation: alertPop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.alert svg {
+  flex: none;
+  animation: alertIcon 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes alertPop {
+  0% { opacity: 0; transform: translateY(-16px) scale(0.94); }
+  60% { opacity: 1; transform: translateY(3px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes alertIcon {
+  0% { transform: scale(0) rotate(-35deg); }
+  60% { transform: scale(1.3) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
 }
 
 .alert-success {
-  background: var(--success-bg);
+  background: linear-gradient(135deg, #e6f6ec, var(--success-bg));
   color: var(--success-dark);
   border-color: #bfe3cd;
+  border-left-color: var(--success);
 }
 
 .alert-error {
-  background: var(--danger-bg);
+  background: linear-gradient(135deg, #fdeceb, var(--danger-bg));
   color: #9e1f2c;
   border-color: #f3c4c2;
+  border-left-color: var(--danger);
 }
 
 .alert-info {
-  background: var(--info-bg);
+  background: linear-gradient(135deg, #eaf3fd, var(--info-bg));
   color: var(--info);
   border-color: #c4daf5;
+  border-left-color: var(--info);
 }
 
 .alert-warning {
-  background: var(--warning-bg);
+  background: linear-gradient(135deg, #fdf5e2, var(--warning-bg));
   color: var(--warning);
   border-color: #efd9a6;
+  border-left-color: var(--warning);
+}
+
+/* Banner de confirmación (eliminar / aceptar) */
+
+.confirm-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  animation: alertPop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.confirm-banner p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.confirm-banner-icon {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  animation: alertIcon 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.confirm-banner-danger {
+  background: linear-gradient(135deg, #fdeceb, var(--danger-bg));
+}
+
+.confirm-banner-danger .confirm-banner-icon {
+  background: var(--danger);
+}
+
+.confirm-banner-primary {
+  background: linear-gradient(135deg, #f7e9ec, var(--guinda-soft));
+}
+
+.confirm-banner-primary .confirm-banner-icon {
+  background: var(--guinda);
 }
 
 /* ---------- Tablas ---------- */
@@ -614,6 +692,13 @@ btn-ghost,
   box-shadow: var(--shadow-lg);
   padding: 8px;
   z-index: 60;
+  transform-origin: top right;
+  animation: dropdownIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes dropdownIn {
+  0% { opacity: 0; transform: translateY(-12px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .dropdown-header {
@@ -667,12 +752,13 @@ btn-ghost,
   position: fixed;
   inset: 0;
   background: rgba(43, 16, 24, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
   z-index: 100;
-  animation: fadeIn 0.15s ease;
+  animation: fadeIn 0.25s ease;
 }
 
 .modal {
@@ -683,7 +769,7 @@ btn-ghost,
   max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
-  animation: slideUp 0.2s ease;
+  animation: slideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modal-lg {
@@ -743,8 +829,9 @@ btn-ghost,
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(46px) scale(0.94); }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ---------- Login ---------- */
@@ -1519,26 +1606,37 @@ btn-ghost,
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 320;
-  background: var(--surface);
+  background: linear-gradient(135deg, #ffffff, #f0faf3);
   color: var(--success-dark);
   border: 2px solid var(--success);
-  border-radius: 2px;
-  box-shadow: var(--shadow-lg);
-  padding: 18px 32px;
+  border-radius: 16px;
+  box-shadow: 0 26px 60px -20px rgba(43, 16, 24, 0.5);
+  padding: 22px 42px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  font-size: 16.5px;
   font-weight: 800;
-  animation: toastIn 0.25s ease;
+  letter-spacing: 0.2px;
+  animation: toastIn 0.55s cubic-bezier(0.22, 1, 0.36, 1), toastGlow 1.6s ease-in-out 0.55s infinite;
 }
 
 .toast svg {
   color: var(--success);
+  width: 26px;
+  height: 26px;
+  animation: alertIcon 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translate(-50%, calc(-50% - 16px)); }
-  to { opacity: 1; transform: translate(-50%, -50%); }
+  0% { opacity: 0; transform: translate(-50%, calc(-50% + 40px)) scale(0.7); }
+  55% { opacity: 1; transform: translate(-50%, calc(-50% - 10px)) scale(1.06); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes toastGlow {
+  0%, 100% { box-shadow: 0 26px 60px -20px rgba(43, 16, 24, 0.5), 0 0 0 0 rgba(46, 125, 50, 0); }
+  50% { box-shadow: 0 26px 60px -20px rgba(43, 16, 24, 0.5), 0 0 0 12px rgba(46, 125, 50, 0.14); }
 }
 
 /* Avisos rectangulares (confirmaciones) */
@@ -1610,6 +1708,24 @@ btn-ghost,
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Spinner genérico para botones */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+  animation: spin 0.7s linear infinite;
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
 /* ----- Checador v2 (modal blanco con logo UES, guinda) ----- */
@@ -1746,11 +1862,11 @@ btn-ghost,
   padding: 22px;
   display: flex;
   flex-direction: column;
-  animation: slideInRight 0.25s ease;
+  animation: slideInRight 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(60px); opacity: 0.4; }
+  from { transform: translateX(120px); opacity: 0.2; }
   to { transform: translateX(0); opacity: 1; }
 }
 

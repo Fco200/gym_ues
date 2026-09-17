@@ -7,6 +7,8 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --url=http://localhost:5173/checador",
+    "autostart": "electron . --autostart",
+    "no-autostart": "electron . --no-autostart",
     "dist": "electron-builder"
   },
   "devDependencies": {
