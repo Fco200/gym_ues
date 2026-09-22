@@ -1,0 +1,73 @@
+{
+  "name": "gym-ues-project",
+  "version": "1.0.0",
+  "description": "Sistema de Checador Gimnasio UES - Electron + React + Express + MySQL",
+  "main": "electron/main.cjs",
+  "author": "Gimnasio UES",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n api,web,app -c blue,green,magenta \"npm:dev:server\" \"npm:dev:client\" \"npm:dev:electron\"",
+    "start": "npm run dev",
+    "start-all": "npm run dev",
+    "dev:server": "cross-env NODE_ENV=development nodemon server/index.js",
+    "dev:client": "vite",
+    "dev:electron": "wait-on http://localhost:5173 http://localhost:3001/api/health && cross-env NODE_ENV=development electron .",
+    "start:prod": "electron .",
+    "build": "vite build",
+    "dist": "vite build && electron-builder",
+    "lint": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check server/index.js && node --check server/db.js && node --check server/db-map.js && node --check server/scope.js && node --check server/middleware.js && node --check server/routes/auth.routes.js && node --check server/routes/attendance.routes.js && node --check server/routes/students.routes.js && node --check server/routes/settings.routes.js && node --check server/routes/uploads.routes.js && node --check server/routes/users.routes.js && echo \"Sintaxis OK\""
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mysql2": "^3.24.4",
+    "multer": "^2.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^10.0.5",
+    "cross-env": "^7.0.3",
+    "electron": "^44.4.1",
+    "electron-builder": "^26.15.3",
+    "nodemon": "^3.1.14",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4",
+    "vite": "^5.4.2",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.ues.gym",
+    "productName": "Gym UES",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "dist/**/*",
+      "server/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "server/uploads",
+        "to": "server/uploads"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gym UES"
+    }
+  }
+}
